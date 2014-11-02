@@ -2,7 +2,7 @@ package com.mycompany.myapp.web.rest;
 
 import com.codahale.metrics.annotation.Timed;
 import com.mycompany.myapp.domain.Author;
-import com.mycompany.myapp.repository.AuthorRepository;
+import com.mycompany.myapp.service.AuthorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -24,7 +24,7 @@ public class AuthorResource {
     private final Logger log = LoggerFactory.getLogger(AuthorResource.class);
 
     @Inject
-    private AuthorRepository authorRepository;
+    private AuthorService authorService;
 
     /**
      * POST  /rest/authors -> Create a new author.
@@ -35,7 +35,7 @@ public class AuthorResource {
     @Timed
     public void create(@RequestBody Author author) {
         log.debug("REST request to save Author : {}", author);
-        authorRepository.save(author);
+        authorService.save(author);
     }
 
     /**
@@ -47,7 +47,7 @@ public class AuthorResource {
     @Timed
     public List<Author> getAll() {
         log.debug("REST request to get all Authors");
-        return authorRepository.findAll();
+        return authorService.findAll();
     }
 
     /**
@@ -57,9 +57,9 @@ public class AuthorResource {
             method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @Timed
-    public ResponseEntity<Author> get(@PathVariable String id, HttpServletResponse response) {
+    public ResponseEntity<Author> get(@PathVariable Long id, HttpServletResponse response) {
         log.debug("REST request to get Author : {}", id);
-        Author author = authorRepository.findOne(id);
+        Author author = authorService.findOne(id);
         if (author == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -73,8 +73,8 @@ public class AuthorResource {
             method = RequestMethod.DELETE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @Timed
-    public void delete(@PathVariable String id) {
+    public void delete(@PathVariable Long id) {
         log.debug("REST request to delete Author : {}", id);
-        authorRepository.delete(id);
+        authorService.delete(id);
     }
 }

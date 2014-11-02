@@ -4,10 +4,10 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.joda.deser.LocalDateDeserializer;
 import com.mycompany.myapp.domain.util.CustomLocalDateSerializer;
+
 import org.joda.time.LocalDate;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
+import org.springframework.data.neo4j.annotation.GraphId;
+import org.springframework.data.neo4j.annotation.NodeEntity;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -15,38 +15,33 @@ import java.math.BigDecimal;
 /**
  * A Author.
  */
-
-@Document(collection = "T_AUTHOR")
+@NodeEntity
 public class Author implements Serializable {
 
-    @Id
-    private String id;
+	@GraphId
+	Long id;
 
-    @Field("name")
     private String name;
 
-    @Field("no_of_books_published")
-    private Integer noOfBooksPublished;
+    private int noOfBooksPublished;
 
-    @Field("weight")
     private Long weight;
 
-    @Field("height")
-    private BigDecimal height;
-
+    private Double height;
+    
     @JsonDeserialize(using = LocalDateDeserializer.class)
     @JsonSerialize(using = CustomLocalDateSerializer.class)
-    @Field("date_of_birth")
-    private LocalDate dateOfBirth;
+    private Long dateOfBirth;
 
-    @Field("married")
     private Boolean married;
 
-    public String getId() {
+    transient private Integer hash;
+
+    public Long getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -75,19 +70,19 @@ public class Author implements Serializable {
     }
 
     public BigDecimal getHeight() {
-        return height;
+        return BigDecimal.valueOf(height);
     }
 
     public void setHeight(BigDecimal height) {
-        this.height = height;
+        this.height = height.doubleValue();
     }
 
     public LocalDate getDateOfBirth() {
-        return dateOfBirth;
+        return new LocalDate(dateOfBirth);
     }
 
     public void setDateOfBirth(LocalDate dateOfBirth) {
-        this.dateOfBirth = dateOfBirth;
+        this.dateOfBirth = dateOfBirth.toDate().getTime();
     }
 
     public Boolean getMarried() {
@@ -98,25 +93,20 @@ public class Author implements Serializable {
         this.married = married;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
+    public boolean equals(Object other) {
+        if (this == other) return true;
 
-        Author author = (Author) o;
+        if (id == null) return false;
 
-        if (id != null ? !id.equals(author.id) : author.id != null) return false;
+        if (! (other instanceof Authority)) return false;
 
-        return true;
+        return id.equals(((Authority) other).id);
     }
 
-    @Override
     public int hashCode() {
-        return id != null ? id.hashCode() : 0;
+        if (hash == null) hash = id == null ? System.identityHashCode(this) : id.hashCode();
+
+        return hash.hashCode();
     }
 
     @Override

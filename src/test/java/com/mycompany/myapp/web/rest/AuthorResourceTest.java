@@ -20,7 +20,7 @@ import java.util.List;
 
 import com.mycompany.myapp.Application;
 import com.mycompany.myapp.domain.Author;
-import com.mycompany.myapp.repository.AuthorRepository;
+import com.mycompany.myapp.service.AuthorService;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -39,8 +39,8 @@ public class AuthorResourceTest {
     private static final String DEFAULT_NAME = "SAMPLE_TEXT";
     private static final String UPDATED_NAME = "UPDATED_TEXT";
     
-    private static final Integer DEFAULT_NO_OF_BOOKS_PUBLISHED = 0;
-    private static final Integer UPDATED_NO_OF_BOOKS_PUBLISHED = 1;
+    private static final int DEFAULT_NO_OF_BOOKS_PUBLISHED = 0;
+    private static final int UPDATED_NO_OF_BOOKS_PUBLISHED = 1;
     
     private static final Long DEFAULT_WEIGHT = 0L;
     private static final Long UPDATED_WEIGHT = 1L;
@@ -55,7 +55,7 @@ public class AuthorResourceTest {
    private static final Boolean UPDATED_MARRIED = true;
 
    @Inject
-   private AuthorRepository authorRepository;
+   private AuthorService authorService;
 
    private MockMvc restAuthorMockMvc;
 
@@ -65,13 +65,16 @@ public class AuthorResourceTest {
     public void setup() {
         MockitoAnnotations.initMocks(this);
         AuthorResource authorResource = new AuthorResource();
-        ReflectionTestUtils.setField(authorResource, "authorRepository", authorRepository);
+        ReflectionTestUtils.setField(authorResource, "authorService", authorService);
         this.restAuthorMockMvc = MockMvcBuilders.standaloneSetup(authorResource).build();
     }
 
     @Before
     public void initTest() {
-        authorRepository.deleteAll();
+    	List<Author> authors  = authorService.findAll();
+    	for (Author author : authors) {
+    		authorService.delete(author.getId());
+    	}
         author = new Author();
         author.setName(DEFAULT_NAME);
         author.setNoOfBooksPublished(DEFAULT_NO_OF_BOOKS_PUBLISHED);
@@ -84,7 +87,7 @@ public class AuthorResourceTest {
     @Test
     public void createAuthor() throws Exception {
         // Validate the database is empty
-        assertThat(authorRepository.findAll()).hasSize(0);
+        assertThat(authorService.findAll()).hasSize(0);
 
         // Create the Author
         restAuthorMockMvc.perform(post("/app/rest/authors")
@@ -93,13 +96,13 @@ public class AuthorResourceTest {
                 .andExpect(status().isOk());
 
         // Validate the Author in the database
-        List<Author> authors = authorRepository.findAll();
+        List<Author> authors = authorService.findAll();
         assertThat(authors).hasSize(1);
         Author testAuthor = authors.iterator().next();
         assertThat(testAuthor.getName()).isEqualTo(DEFAULT_NAME);
         assertThat(testAuthor.getNoOfBooksPublished()).isEqualTo(DEFAULT_NO_OF_BOOKS_PUBLISHED);
         assertThat(testAuthor.getWeight()).isEqualTo(DEFAULT_WEIGHT);
-        assertThat(testAuthor.getHeight()).isEqualTo(DEFAULT_HEIGHT);
+        assertThat(testAuthor.getHeight().doubleValue()).isEqualTo(DEFAULT_HEIGHT.doubleValue());
         assertThat(testAuthor.getDateOfBirth()).isEqualTo(DEFAULT_DATE_OF_BIRTH);
         assertThat(testAuthor.getMarried()).isEqualTo(DEFAULT_MARRIED);;
     }
@@ -107,18 +110,18 @@ public class AuthorResourceTest {
     @Test
     public void getAllAuthors() throws Exception {
         // Initialize the database
-        authorRepository.save(author);
+        authorService.save(author);
 
         // Get all the authors
         restAuthorMockMvc.perform(get("/app/rest/authors"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.[0].id").value(author.getId()))
+                .andExpect(jsonPath("$.[0].id").value(new Integer(author.getId().intValue())))
                 .andExpect(jsonPath("$.[0].name").value(DEFAULT_NAME.toString()))
                 .andExpect(jsonPath("$.[0].noOfBooksPublished").value(DEFAULT_NO_OF_BOOKS_PUBLISHED))
                 .andExpect(jsonPath("$.[0].weight").value(DEFAULT_WEIGHT.intValue()))
-                .andExpect(jsonPath("$.[0].height").value(DEFAULT_HEIGHT.intValue()))
+                .andExpect(jsonPath("$.[0].height").value(DEFAULT_HEIGHT.doubleValue()))
                 .andExpect(jsonPath("$.[0].dateOfBirth").value(DEFAULT_DATE_OF_BIRTH.toString()))
                 .andExpect(jsonPath("$.[0].married").value(DEFAULT_MARRIED.booleanValue()));
     }
@@ -126,17 +129,17 @@ public class AuthorResourceTest {
     @Test
     public void getAuthor() throws Exception {
         // Initialize the database
-        authorRepository.save(author);
+        authorService.save(author);
 
         // Get the author
         restAuthorMockMvc.perform(get("/app/rest/authors/{id}", author.getId()))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath("$.id").value(author.getId()))
+            .andExpect(jsonPath("$.id").value(author.getId().intValue()))
             .andExpect(jsonPath("$.name").value(DEFAULT_NAME.toString()))
             .andExpect(jsonPath("$.noOfBooksPublished").value(DEFAULT_NO_OF_BOOKS_PUBLISHED))
             .andExpect(jsonPath("$.weight").value(DEFAULT_WEIGHT.intValue()))
-            .andExpect(jsonPath("$.height").value(DEFAULT_HEIGHT.intValue()))
+            .andExpect(jsonPath("$.height").value(DEFAULT_HEIGHT.doubleValue()))
             .andExpect(jsonPath("$.dateOfBirth").value(DEFAULT_DATE_OF_BIRTH.toString()))
             .andExpect(jsonPath("$.married").value(DEFAULT_MARRIED.booleanValue()));
     }
@@ -151,7 +154,7 @@ public class AuthorResourceTest {
     @Test
     public void updateAuthor() throws Exception {
         // Initialize the database
-        authorRepository.save(author);
+        authorService.save(author);
 
         // Update the author
         author.setName(UPDATED_NAME);
@@ -166,13 +169,13 @@ public class AuthorResourceTest {
                 .andExpect(status().isOk());
 
         // Validate the Author in the database
-        List<Author> authors = authorRepository.findAll();
+        List<Author> authors = authorService.findAll();
         assertThat(authors).hasSize(1);
         Author testAuthor = authors.iterator().next();
         assertThat(testAuthor.getName()).isEqualTo(UPDATED_NAME);
         assertThat(testAuthor.getNoOfBooksPublished()).isEqualTo(UPDATED_NO_OF_BOOKS_PUBLISHED);
         assertThat(testAuthor.getWeight()).isEqualTo(UPDATED_WEIGHT);
-        assertThat(testAuthor.getHeight()).isEqualTo(UPDATED_HEIGHT);
+        assertThat(testAuthor.getHeight().doubleValue()).isEqualTo(UPDATED_HEIGHT.doubleValue());
         assertThat(testAuthor.getDateOfBirth()).isEqualTo(UPDATED_DATE_OF_BIRTH);
         assertThat(testAuthor.getMarried()).isEqualTo(UPDATED_MARRIED);;
     }
@@ -180,7 +183,7 @@ public class AuthorResourceTest {
     @Test
     public void deleteAuthor() throws Exception {
         // Initialize the database
-        authorRepository.save(author);
+        authorService.save(author);
 
         // Get the author
         restAuthorMockMvc.perform(delete("/app/rest/authors/{id}", author.getId())
@@ -188,7 +191,7 @@ public class AuthorResourceTest {
                 .andExpect(status().isOk());
 
         // Validate the database is empty
-        List<Author> authors = authorRepository.findAll();
+        List<Author> authors = authorService.findAll();
         assertThat(authors).hasSize(0);
     }
 }
