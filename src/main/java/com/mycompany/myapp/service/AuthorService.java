@@ -32,8 +32,7 @@ public class AuthorService {
     }
     
     public Author findOne(Long id) {
-    	Author author = publicationRepository.findOne(id);
-    	System.out.println("Author class: " + author.getName());
+    	Author author = publicationRepository.findAuthorByID(id);
     	return author;
     }
         

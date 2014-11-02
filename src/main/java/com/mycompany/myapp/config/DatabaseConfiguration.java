@@ -26,14 +26,7 @@ public class DatabaseConfiguration extends Neo4jConfiguration  {
 	public DatabaseConfiguration() {
 		setBasePackage("com.mycompany.myapp.domain");
 	}
-	
-	@Bean
-	public TypeSafetyPolicy typeSafetyPolicy() { 
 		
-		return new TypeSafetyPolicy(TypeSafetyOption.RETURNS_NULL); 
-	}
-	
-
 	@Bean(destroyMethod = "shutdown")
 	public GraphDatabaseService graphDatabaseService() {
 		
