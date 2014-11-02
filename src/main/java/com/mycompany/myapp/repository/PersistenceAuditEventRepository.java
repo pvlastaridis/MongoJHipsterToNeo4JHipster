@@ -1,21 +1,28 @@
 package com.mycompany.myapp.repository;
 
 import com.mycompany.myapp.domain.PersistentAuditEvent;
+
 import org.joda.time.LocalDateTime;
-import org.springframework.data.mongodb.repository.MongoRepository;
-import org.springframework.data.mongodb.repository.Query;
+import org.springframework.data.neo4j.annotation.Query;
+import org.springframework.data.neo4j.repository.GraphRepository;
 
 import java.util.List;
 
 /**
- * Spring Data MongoDB repository for the PersistentAuditEvent entity.
+ * Spring Data Neo4JDB repository for the PersistentAuditEvent entity.
  */
- public interface PersistenceAuditEventRepository extends MongoRepository<PersistentAuditEvent, String> {
+public interface PersistenceAuditEventRepository extends
+		GraphRepository<PersistentAuditEvent> {
 
-    List<PersistentAuditEvent> findByPrincipal(String principal);
+	List<PersistentAuditEvent> findByPrincipal(String principal);
 
-    List<PersistentAuditEvent> findByPrincipalAndAuditEventDateGreaterThan(String principal, LocalDateTime after);
-    
-    @Query("{auditEventDate: {$gt: ?0, $lte: ?1}}")
-    List<PersistentAuditEvent> findByDates(LocalDateTime fromDate, LocalDateTime toDate);
+	List<PersistentAuditEvent> findByPrincipalAndAuditEventDateGreaterThan(
+			String principal, Long after);
+
+	@Query("MATCH (`persistentAuditEvent`:`PersistentAuditEvent`) WHERE "
+			+ "`persistentAuditEvent`.`auditEventDate` >= {0} AND "
+			+ "`persistentAuditEvent`.`auditEventDate` <= {1}"
+			+ "RETURN `persistentAuditEvent`")
+	List<PersistentAuditEvent> findByAuditEventDateBetween(Long fromDate,
+			Long toDate);
 }

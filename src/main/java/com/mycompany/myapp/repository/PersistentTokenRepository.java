@@ -2,18 +2,20 @@ package com.mycompany.myapp.repository;
 
 import com.mycompany.myapp.domain.PersistentToken;
 import com.mycompany.myapp.domain.User;
-import org.joda.time.LocalDate;
-import org.springframework.data.mongodb.repository.MongoRepository;
+
+import org.springframework.data.neo4j.repository.GraphRepository;
 
 import java.util.List;
 
 /**
- * Spring Data MongoDB repository for the PersistentToken entity.
+ * Spring Data Neo4JDB repository for the PersistentToken entity.
  */
-public interface PersistentTokenRepository extends MongoRepository<PersistentToken, String> {
-
+public interface PersistentTokenRepository extends GraphRepository<PersistentToken> {
+	
+	PersistentToken findBySeries(String series);		
+	
+    List<PersistentToken> findByTokenDateGreaterThan(Long date);
+    
     List<PersistentToken> findByUser(User user);
-
-    List<PersistentToken> findByTokenDateBefore(LocalDate localDate);
 
 }

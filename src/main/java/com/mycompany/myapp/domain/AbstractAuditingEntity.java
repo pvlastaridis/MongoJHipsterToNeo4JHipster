@@ -6,9 +6,7 @@ import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.mongodb.core.mapping.Field;
 
-import javax.validation.constraints.NotNull;
 
 /**
  * Base abstract class for entities which will hold definitions for created, last modified by and created,
@@ -18,20 +16,16 @@ import javax.validation.constraints.NotNull;
 public abstract class AbstractAuditingEntity {
 
     @CreatedBy
-    @Field("created_by")
     private String createdBy;
 
     @CreatedDate
-    @Field("created_date")
-    private DateTime createdDate = DateTime.now();
+    private Long createdDate = DateTime.now().getMillis();
 
     @LastModifiedBy
-    @Field("last_modified_by")
     private String lastModifiedBy;
 
     @LastModifiedDate
-    @Field("last_modified_date  ")
-    private DateTime lastModifiedDate = DateTime.now();
+    private Long lastModifiedDate = DateTime.now().getMillis();
 
     public String getCreatedBy() {
         return createdBy;
@@ -42,11 +36,11 @@ public abstract class AbstractAuditingEntity {
     }
 
     public DateTime getCreatedDate() {
-        return createdDate;
+        return new DateTime(createdDate);
     }
 
     public void setCreatedDate(DateTime createdDate) {
-        this.createdDate = createdDate;
+        this.createdDate = createdDate.getMillis();
     }
 
     public String getLastModifiedBy() {
@@ -58,10 +52,10 @@ public abstract class AbstractAuditingEntity {
     }
 
     public DateTime getLastModifiedDate() {
-        return lastModifiedDate;
+        return new DateTime(lastModifiedDate);
     }
 
     public void setLastModifiedDate(DateTime lastModifiedDate) {
-        this.lastModifiedDate = lastModifiedDate;
+        this.lastModifiedDate = lastModifiedDate.getMillis();
     }
 }

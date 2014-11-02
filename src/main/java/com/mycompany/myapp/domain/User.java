@@ -1,13 +1,18 @@
 package com.mycompany.myapp.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import org.hibernate.validator.constraints.Email;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
+import org.neo4j.graphdb.Direction;
+import org.springframework.data.neo4j.annotation.Fetch;
+import org.springframework.data.neo4j.annotation.GraphId;
+import org.springframework.data.neo4j.annotation.Indexed;
+import org.springframework.data.neo4j.annotation.NodeEntity;
+import org.springframework.data.neo4j.annotation.RelatedTo;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
@@ -15,13 +20,15 @@ import java.util.Set;
 /**
  * A user.
  */
-
-@Document(collection = "T_USER")
+@NodeEntity
 public class User extends AbstractAuditingEntity implements Serializable {
 
+	@GraphId
+	Long id;
+    
     @NotNull
     @Size(min = 0, max = 50)
-    @Id
+    @Indexed(unique=true)
     private String login;
 
     @JsonIgnore
@@ -29,11 +36,9 @@ public class User extends AbstractAuditingEntity implements Serializable {
     private String password;
 
     @Size(min = 0, max = 50)
-    @Field("first_name")
     private String firstName;
 
     @Size(min = 0, max = 50)
-    @Field("last_name")
     private String lastName;
 
     @Email
@@ -43,20 +48,31 @@ public class User extends AbstractAuditingEntity implements Serializable {
     private boolean activated = false;
 
     @Size(min = 2, max = 5)
-    @Field("lang_key")
     private String langKey;
 
     @Size(min = 0, max = 20)
-    @Field("activation_key")
     private String activationKey;
 
     @JsonIgnore
-    private Set<Authority> authorities = new HashSet<>();
+ 	@RelatedTo(direction = Direction.OUTGOING)
+ 	@Fetch
+ 	Set<Authority> authorities = new HashSet<Authority>();
 
-    
-    private Set<PersistentToken> persistentTokens = new HashSet<>();
+ 	@RelatedTo(direction = Direction.INCOMING)
+ 	@Fetch
+    private Set<PersistentToken> persistentTokens = new HashSet<>(); 
+ 	
+    transient private Integer hash;
 
-    public String getLogin() {
+    public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public String getLogin() {
         return login;
     }
 
@@ -129,27 +145,20 @@ public class User extends AbstractAuditingEntity implements Serializable {
     }
     
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
+    public boolean equals(Object other) {
+        if (this == other) return true;
 
-        User user = (User) o;
+        if (id == null) return false;
 
-        if (!login.equals(user.login)) {
-            return false;
-        }
+        if (! (other instanceof Authority)) return false;
 
-        return true;
+        return id.equals(((Authority) other).id);
     }
 
-    @Override
     public int hashCode() {
-        return login.hashCode();
+        if (hash == null) hash = id == null ? System.identityHashCode(this) : id.hashCode();
+
+        return hash.hashCode();
     }
 
     @Override

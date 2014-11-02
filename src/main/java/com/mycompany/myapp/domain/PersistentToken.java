@@ -2,16 +2,20 @@ package com.mycompany.myapp.domain;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.DBRef;
-import org.springframework.data.mongodb.core.mapping.Document;
-
+import org.neo4j.graphdb.Direction;
+import org.springframework.data.neo4j.annotation.Fetch;
+import org.springframework.data.neo4j.annotation.GraphId;
+import org.springframework.data.neo4j.annotation.Indexed;
+import org.springframework.data.neo4j.annotation.NodeEntity;
+import org.springframework.data.neo4j.annotation.RelatedTo;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+
 import java.io.Serializable;
 
 
@@ -21,14 +25,18 @@ import java.io.Serializable;
  * @see com.mycompany.myapp.security.CustomPersistentRememberMeServices
  */
 
-@Document(collection = "T_PERSISTENT_TOKEN")
+@NodeEntity
 public class PersistentToken implements Serializable {
 
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormat.forPattern("d MMMM yyyy");
 
     private static final int MAX_USER_AGENT_LEN = 255;
-
-    @Id
+    
+    @GraphId
+	Long id;
+    
+    @NotNull
+    @Indexed(unique=true)
     private String series;
 
     @JsonIgnore
@@ -36,7 +44,7 @@ public class PersistentToken implements Serializable {
     private String tokenValue;
 
     @JsonIgnore
-    private LocalDate tokenDate;
+    private Long tokenDate;
 
     //an IPV6 address max length is 39 characters
     @Size(min = 0, max = 39)
@@ -46,11 +54,21 @@ public class PersistentToken implements Serializable {
     private String userAgent;
 
     @JsonIgnore
-    
-    @DBRef
+    @RelatedTo(type = "PERSISTENT_TOKENS", direction = Direction.OUTGOING)
+	@Fetch
     private User user;
+    
+    transient private Integer hash;
+        
+    public Long getId() {
+		return id;
+	}
 
-    public String getSeries() {
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public String getSeries() {
         return series;
     }
 
@@ -67,16 +85,16 @@ public class PersistentToken implements Serializable {
     }
 
     public LocalDate getTokenDate() {
-        return tokenDate;
+        return new LocalDate(tokenDate);
     }
 
     public void setTokenDate(LocalDate tokenDate) {
-        this.tokenDate = tokenDate;
+        this.tokenDate = tokenDate.toDate().getTime();
     }
 
     @JsonGetter
     public String getFormattedTokenDate() {
-        return DATE_TIME_FORMATTER.print(this.tokenDate);
+        return DATE_TIME_FORMATTER.print(new LocalDate(this.tokenDate));
     }
 
     public String getIpAddress() {
@@ -107,27 +125,20 @@ public class PersistentToken implements Serializable {
         this.user = user;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
+    public boolean equals(Object other) {
+        if (this == other) return true;
 
-        PersistentToken that = (PersistentToken) o;
+        if (id == null) return false;
 
-        if (!series.equals(that.series)) {
-            return false;
-        }
+        if (! (other instanceof PersistentToken)) return false;
 
-        return true;
+        return id.equals(((PersistentToken) other).id);
     }
 
-    @Override
     public int hashCode() {
-        return series.hashCode();
+        if (hash == null) hash = id == null ? System.identityHashCode(this) : id.hashCode();
+
+        return hash.hashCode();
     }
 
     @Override

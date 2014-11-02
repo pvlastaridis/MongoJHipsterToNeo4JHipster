@@ -3,12 +3,6 @@ server:
 
 spring:
     profiles: dev
-    data:
-        mongodb:
-            host: localhost
-            port: 27017
-            database: Neo4JHipster
-    
 
     mail:
         baseUrl: http://localhost:8080

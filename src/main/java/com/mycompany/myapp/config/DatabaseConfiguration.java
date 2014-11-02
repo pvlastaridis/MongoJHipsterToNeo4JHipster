@@ -1,67 +1,46 @@
 package com.mycompany.myapp.config;
 
 
-import com.mongodb.Mongo;
-import org.mongeez.Mongeez;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
-import org.springframework.boot.autoconfigure.mongo.MongoProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.data.mongodb.config.AbstractMongoConfiguration;
-import org.springframework.data.mongodb.config.EnableMongoAuditing;
-import org.springframework.data.mongodb.core.mapping.event.ValidatingMongoEventListener;
-import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
-import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
-import javax.inject.Inject;
+import org.springframework.data.neo4j.config.EnableNeo4jRepositories;
+import org.springframework.data.neo4j.config.Neo4jConfiguration;
+import org.springframework.data.neo4j.support.Neo4jTemplate;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+
+import javax.annotation.PostConstruct;
 
 @Configuration
-@EnableMongoRepositories("com.mycompany.myapp.repository")
-@Import(value = MongoAutoConfiguration.class)
-@EnableMongoAuditing(auditorAwareRef = "springSecurityAuditorAware")
-public class DatabaseConfiguration extends AbstractMongoConfiguration  {
+@EnableNeo4jRepositories("com.mycompany.myapp.repository")
+@EnableTransactionManagement
+public class DatabaseConfiguration extends Neo4jConfiguration  {
 
     private final Logger log = LoggerFactory.getLogger(DatabaseConfiguration.class);
 
-    @Inject
-    private Mongo mongo;
+	public DatabaseConfiguration() {
+		setBasePackage("com.mycompany.myapp.domain");
+	}
 
-    @Inject
-    private MongoProperties mongoProperties;
-    @Bean
-    public ValidatingMongoEventListener validatingMongoEventListener() {
-        return new ValidatingMongoEventListener(validator());
-    }
+	@Bean(destroyMethod = "shutdown")
+	public GraphDatabaseService graphDatabaseService() {
+		
+		return new GraphDatabaseFactory()
+				.newEmbeddedDatabase("data212/demo.db");
+	}
 
-    @Bean
-    public LocalValidatorFactoryBean validator() {
-        return new LocalValidatorFactoryBean();
-    }
+	@Bean
+	public Neo4jTemplate neo4jTemplate() {
 
-    @Override
-    protected String getDatabaseName() {
-        return mongoProperties.getDatabase();
-    }
+		return new Neo4jTemplate(graphDatabaseService());
+	}
+	
 
-    @Override
-    public Mongo mongo() throws Exception {
-        return mongo;
-    }
-
-    @Bean
-    public Mongeez mongeez() {
-        log.debug("Configuring Mongeez");
-        Mongeez mongeez = new Mongeez();
-
-        mongeez.setFile(new ClassPathResource("/config/mongeez/master.xml"));
-        mongeez.setMongo(mongo);
-        mongeez.setDbName(mongoProperties.getDatabase());
-        mongeez.process();
-
-        return mongeez;
-    }
-    
+	@PostConstruct
+	public void initData() {
+		this.log.error("Database set and running!"); 
+	}
 }

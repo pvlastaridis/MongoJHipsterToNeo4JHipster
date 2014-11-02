@@ -2,12 +2,18 @@ package com.mycompany.myapp.domain;
 
 
 import org.joda.time.LocalDateTime;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
+import org.neo4j.graphdb.Direction;
+import org.springframework.data.neo4j.annotation.Fetch;
+import org.springframework.data.neo4j.annotation.GraphId;
+import org.springframework.data.neo4j.annotation.NodeEntity;
+import org.springframework.data.neo4j.annotation.RelatedTo;
+
 import javax.validation.constraints.NotNull;
+
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Persist AuditEvent managed by the Spring Boot actuator
@@ -15,24 +21,23 @@ import java.util.Map;
  */
 
 
-@Document(collection = "T_PERSISTENT_AUDIT_EVENT")
+@NodeEntity
 public class PersistentAuditEvent  {
 
-    @Id
-    @Field("event_id")
-    private long id;
+	@GraphId
+	Long id;
 
     @NotNull
     private String principal;
 
     
-    private LocalDateTime auditEventDate;
+    private Long auditEventDate;
     
-    @Field("event_type")
     private String auditEventType;
 
-    
-    private Map<String, String> data = new HashMap<>();
+    @RelatedTo(direction = Direction.OUTGOING)
+   	@Fetch
+   	private Set<PersistentAuditEventData> data = new HashSet<PersistentAuditEventData>();
 
     public long getId() {
         return id;
@@ -51,11 +56,11 @@ public class PersistentAuditEvent  {
     }
 
     public LocalDateTime getAuditEventDate() {
-        return auditEventDate;
+        return new LocalDateTime(auditEventDate);
     }
 
     public void setAuditEventDate(LocalDateTime auditEventDate) {
-        this.auditEventDate = auditEventDate;
+        this.auditEventDate = auditEventDate.toDateTime().getMillis();
     }
 
     public String getAuditEventType() {
@@ -67,10 +72,14 @@ public class PersistentAuditEvent  {
     }
 
     public Map<String, String> getData() {
-        return data;
-    }
-
-    public void setData(Map<String, String> data) {
-        this.data = data;
-    }
+		Map<String, String> mdata = new HashMap<>();
+		for (PersistentAuditEventData paed : data) {
+			mdata.put(paed.getName(), paed.getValue());
+		}		
+		return mdata;
+	}
+	
+	public void setData(Set<PersistentAuditEventData> data) {
+		this.data = data;
+	}
 }

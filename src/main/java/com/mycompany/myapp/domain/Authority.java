@@ -1,25 +1,41 @@
 package com.mycompany.myapp.domain;
 
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.neo4j.annotation.GraphId;
+import org.springframework.data.neo4j.annotation.Indexed;
+import org.springframework.data.neo4j.annotation.NodeEntity;
+
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+
 import java.io.Serializable;
 
 /**
  * An authority (a security role) used by Spring Security.
  */
 
-@Document(collection = "T_AUTHORITY")
+@NodeEntity
 public class Authority implements Serializable {
+	
+	@GraphId
+	Long id;
 
     @NotNull
     @Size(min = 0, max = 50)
-    @Id
+    @Indexed(unique=true)
     private String name;
+    
+    transient private Integer hash;
+       
+    public Long getId() {
+		return id;
+	}
 
-    public String getName() {
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public String getName() {
         return name;
     }
 
@@ -27,27 +43,20 @@ public class Authority implements Serializable {
         this.name = name;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
+    public boolean equals(Object other) {
+        if (this == other) return true;
 
-        Authority authority = (Authority) o;
+        if (id == null) return false;
 
-        if (name != null ? !name.equals(authority.name) : authority.name != null) {
-            return false;
-        }
+        if (! (other instanceof Authority)) return false;
 
-        return true;
+        return id.equals(((Authority) other).id);
     }
 
-    @Override
     public int hashCode() {
-        return name != null ? name.hashCode() : 0;
+        if (hash == null) hash = id == null ? System.identityHashCode(this) : id.hashCode();
+
+        return hash.hashCode();
     }
 
     @Override
