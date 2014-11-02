@@ -10,6 +10,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.neo4j.config.EnableNeo4jRepositories;
 import org.springframework.data.neo4j.config.Neo4jConfiguration;
 import org.springframework.data.neo4j.support.Neo4jTemplate;
+import org.springframework.data.neo4j.support.typesafety.TypeSafetyOption;
+import org.springframework.data.neo4j.support.typesafety.TypeSafetyPolicy;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.annotation.PostConstruct;
@@ -24,6 +26,13 @@ public class DatabaseConfiguration extends Neo4jConfiguration  {
 	public DatabaseConfiguration() {
 		setBasePackage("com.mycompany.myapp.domain");
 	}
+	
+	@Bean
+	public TypeSafetyPolicy typeSafetyPolicy() { 
+		
+		return new TypeSafetyPolicy(TypeSafetyOption.RETURNS_NULL); 
+	}
+	
 
 	@Bean(destroyMethod = "shutdown")
 	public GraphDatabaseService graphDatabaseService() {
@@ -37,6 +46,7 @@ public class DatabaseConfiguration extends Neo4jConfiguration  {
 
 		return new Neo4jTemplate(graphDatabaseService());
 	}
+	
 	
 
 	@PostConstruct

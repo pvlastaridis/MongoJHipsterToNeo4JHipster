@@ -33,7 +33,7 @@ public class AuthorService {
     
     public Author findOne(Long id) {
     	Author author = publicationRepository.findOne(id);
-    	System.out.println("Author class: " + author.getHeight());
+    	System.out.println("Author class: " + author.getName());
     	return author;
     }
         
