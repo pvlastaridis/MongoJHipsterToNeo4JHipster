@@ -160,7 +160,7 @@ public class AccountResourceIntTest {
                 .content(TestUtil.convertObjectToJsonBytes(u)))
             .andExpect(status().isCreated());
 
-        Optional<User> user = userRepository.findOneByLogin("joe");
+        Optional<User> user = Optional.ofNullable(userRepository.findOneByLogin("joe"));
         assertThat(user.isPresent()).isTrue();
     }
 
@@ -184,7 +184,7 @@ public class AccountResourceIntTest {
                 .content(TestUtil.convertObjectToJsonBytes(u)))
             .andExpect(status().isBadRequest());
 
-        Optional<User> user = userRepository.findOneByEmail("funky@example.com");
+        Optional<User> user = Optional.ofNullable(userRepository.findOneByEmail("funky@example.com"));
         assertThat(user.isPresent()).isFalse();
     }
 
@@ -208,7 +208,7 @@ public class AccountResourceIntTest {
                 .content(TestUtil.convertObjectToJsonBytes(u)))
             .andExpect(status().isBadRequest());
 
-        Optional<User> user = userRepository.findOneByLogin("bob");
+        Optional<User> user = Optional.ofNullable(userRepository.findOneByLogin("bob"));
         assertThat(user.isPresent()).isFalse();
     }
 
@@ -245,7 +245,7 @@ public class AccountResourceIntTest {
                 .content(TestUtil.convertObjectToJsonBytes(dup)))
             .andExpect(status().is4xxClientError());
 
-        Optional<User> userDup = userRepository.findOneByEmail("alicejr@example.com");
+        Optional<User> userDup = Optional.ofNullable(userRepository.findOneByEmail("alicejr@example.com"));
         assertThat(userDup.isPresent()).isFalse();
     }
 
@@ -282,7 +282,7 @@ public class AccountResourceIntTest {
                 .content(TestUtil.convertObjectToJsonBytes(dup)))
             .andExpect(status().is4xxClientError());
 
-        Optional<User> userDup = userRepository.findOneByLogin("johnjr");
+        Optional<User> userDup = Optional.ofNullable(userRepository.findOneByLogin("johnjr"));
         assertThat(userDup.isPresent()).isFalse();
     }
 
@@ -306,9 +306,9 @@ public class AccountResourceIntTest {
                 .content(TestUtil.convertObjectToJsonBytes(u)))
             .andExpect(status().isCreated());
 
-        Optional<User> userDup = userRepository.findOneByLogin("badguy");
+        Optional<User> userDup = Optional.ofNullable(userRepository.findOneByLogin("badguy"));
         assertThat(userDup.isPresent()).isTrue();
         assertThat(userDup.get().getAuthorities()).hasSize(1)
-            .containsExactly(authorityRepository.findOne(AuthoritiesConstants.USER));
+            .containsExactly(authorityRepository.findOneByName(AuthoritiesConstants.USER));
     }
 }

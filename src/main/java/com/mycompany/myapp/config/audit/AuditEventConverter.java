@@ -2,6 +2,7 @@ package com.mycompany.myapp.config.audit;
 
 import com.mycompany.myapp.domain.PersistentAuditEvent;
 
+import com.mycompany.myapp.domain.PersistentAuditEventData;
 import org.springframework.boot.actuate.audit.AuditEvent;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.stereotype.Component;
@@ -37,7 +38,7 @@ public class AuditEventConverter {
      * @return the converted list.
      */
     public AuditEvent convertToAuditEvent(PersistentAuditEvent persistentAuditEvent) {
-        Instant instant = persistentAuditEvent.getAuditEventDate().atZone(ZoneId.systemDefault()).toInstant();
+        Instant instant = persistentAuditEvent.getAuditEventDDate().atZone(ZoneId.systemDefault()).toInstant();
         return new AuditEvent(Date.from(instant), persistentAuditEvent.getPrincipal(),
             persistentAuditEvent.getAuditEventType(), convertDataToObjects(persistentAuditEvent.getData()));
     }
@@ -48,14 +49,15 @@ public class AuditEventConverter {
      * @param data the data to convert
      * @return a map of String, Object
      */
-    public Map<String, Object> convertDataToObjects(Map<String, String> data) {
+    public Map<String, Object> convertDataToObjects(Set<PersistentAuditEventData> data) {
         Map<String, Object> results = new HashMap<>();
 
         if (data != null) {
-            for (String key : data.keySet()) {
-                results.put(key, data.get(key));
+            for (PersistentAuditEventData obj : data) {
+                results.put(obj.getName(), obj);
             }
         }
+
         return results;
     }
 

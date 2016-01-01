@@ -43,7 +43,7 @@ public class UserServiceIntTest {
 
     @Test
     public void testRemoveOldPersistentTokens() {
-        User admin = userRepository.findOneByLogin("admin").get();
+        User admin = userRepository.findOneByLogin("admin");
         int existingCount = persistentTokenRepository.findByUser(admin).size();
         generateUserToken(admin, "1111-1111", LocalDate.now());
         LocalDate now = LocalDate.now();
@@ -81,7 +81,7 @@ public class UserServiceIntTest {
         ZonedDateTime daysAgo = ZonedDateTime.now().minusHours(25);
         String resetKey = RandomUtil.generateResetKey();
         user.setActivated(true);
-        user.setResetDate(daysAgo);
+        user.setResetDDate(daysAgo);
         user.setResetKey(resetKey);
 
         userRepository.save(user);
@@ -99,7 +99,7 @@ public class UserServiceIntTest {
 
         ZonedDateTime daysAgo = ZonedDateTime.now().minusHours(25);
         user.setActivated(true);
-        user.setResetDate(daysAgo);
+        user.setResetDDate(daysAgo);
         user.setResetKey("1234");
         userRepository.save(user);
         Optional<User> maybeUser = userService.completePasswordReset("johndoe2", user.getResetKey());
@@ -114,7 +114,7 @@ public class UserServiceIntTest {
         ZonedDateTime daysAgo = ZonedDateTime.now().minusHours(2);
         String resetKey = RandomUtil.generateResetKey();
         user.setActivated(true);
-        user.setResetDate(daysAgo);
+        user.setResetDDate(daysAgo);
         user.setResetKey(resetKey);
         userRepository.save(user);
         Optional<User> maybeUser = userService.completePasswordReset("johndoe2", user.getResetKey());
@@ -130,7 +130,7 @@ public class UserServiceIntTest {
     public void testFindNotActivatedUsersByCreationDateBefore() {
         userService.removeNotActivatedUsers();
         ZonedDateTime now = ZonedDateTime.now();
-        List<User> users = userRepository.findAllByActivatedIsFalseAndCreatedDateBefore(now.minusDays(3));
+        List<User> users = userRepository.findAllByActivatedIsFalseAndCreatedDateBefore(now.minusDays(3).toEpochSecond());
         assertThat(users).isEmpty();
     }
 
@@ -139,7 +139,7 @@ public class UserServiceIntTest {
         token.setSeries(tokenSeries);
         token.setUser(user);
         token.setTokenValue(tokenSeries + "-data");
-        token.setTokenDate(localDate);
+        token.setTokenDate(localDate.toEpochDay());
         token.setIpAddress("127.0.0.1");
         token.setUserAgent("Test agent");
         persistentTokenRepository.save(token);

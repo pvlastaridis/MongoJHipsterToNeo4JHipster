@@ -64,7 +64,7 @@ public class AuditResourceIntTest {
         auditEvent = new PersistentAuditEvent();
         auditEvent.setAuditEventType(SAMPLE_TYPE);
         auditEvent.setPrincipal(SAMPLE_PRINCIPAL);
-        auditEvent.setAuditEventDate(SAMPLE_TIMESTAMP);
+        auditEvent.setAuditEventDDate(SAMPLE_TIMESTAMP);
     }
 
 

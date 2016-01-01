@@ -8,6 +8,7 @@ import org.springframework.boot.actuate.audit.AuditEvent;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
@@ -39,13 +40,16 @@ public class AuditEventService {
     }
 
     public List<AuditEvent> findByDates(LocalDateTime fromDate, LocalDateTime toDate) {
+        ZoneId zoneId = ZoneId.systemDefault();
         List<PersistentAuditEvent> persistentAuditEvents =
-            persistenceAuditEventRepository.findAllByAuditEventDateBetween(fromDate, toDate);
+            persistenceAuditEventRepository.findAllByAuditEventDateBetween(
+                fromDate.atZone(zoneId).toInstant().toEpochMilli(),
+                toDate.atZone(zoneId).toInstant().toEpochMilli());
 
         return auditEventConverter.convertToAuditEvent(persistentAuditEvents);
     }
 
-    public Optional<AuditEvent> find(String id) {
+    public Optional<AuditEvent> find(Long id) {
         return Optional.ofNullable(persistenceAuditEventRepository.findOne(id)).map
             (auditEventConverter::convertToAuditEvent);
     }

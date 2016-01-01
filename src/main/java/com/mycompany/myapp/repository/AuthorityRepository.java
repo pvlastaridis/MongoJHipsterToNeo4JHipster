@@ -1,11 +1,12 @@
 package com.mycompany.myapp.repository;
 
 import com.mycompany.myapp.domain.Authority;
-
-import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.neo4j.repository.GraphRepository;
 
 /**
- * Spring Data MongoDB repository for the Authority entity.
+ * Spring Data Neo4jDB repository for the Authority entity.
  */
-public interface AuthorityRepository extends MongoRepository<Authority, String> {
+public interface AuthorityRepository extends GraphRepository<Authority> {
+
+    Authority findOneByName(String name);
 }

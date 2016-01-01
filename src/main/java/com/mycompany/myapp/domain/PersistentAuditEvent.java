@@ -1,39 +1,39 @@
 package com.mycompany.myapp.domain;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
-import java.time.LocalDateTime;
+import org.neo4j.ogm.annotation.NodeEntity;
+import org.neo4j.ogm.annotation.Relationship;
+
 import javax.validation.constraints.NotNull;
-import java.util.HashMap;
-import java.util.Map;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Persist AuditEvent managed by the Spring Boot actuator
  * @see org.springframework.boot.actuate.audit.AuditEvent
  */
-@Document(collection = "jhi_persistent_audit_event")
-public class PersistentAuditEvent {
+@NodeEntity
+public class PersistentAuditEvent extends Entity {
 
-    @Id
-    @Field("event_id")
-    private String id;
+    private String eventId;
 
     @NotNull
     private String principal;
 
-    private LocalDateTime auditEventDate;
-    @Field("event_type")
+    private Long auditEventDate;
+
     private String auditEventType;
 
-    private Map<String, String> data = new HashMap<>();
+    @Relationship
+    private Set<PersistentAuditEventData> data = new HashSet<>();
 
-    public String getId() {
-        return id;
-    }
 
-    public void setId(String id) {
-        this.id = id;
+    public String getEventId() { return eventId; }
+
+    public void setEventId(String id) {
+        this.eventId = id;
     }
 
     public String getPrincipal() {
@@ -44,13 +44,17 @@ public class PersistentAuditEvent {
         this.principal = principal;
     }
 
-    public LocalDateTime getAuditEventDate() {
-        return auditEventDate;
-    }
+    public Long getAuditEventDate() { return auditEventDate; }
 
-    public void setAuditEventDate(LocalDateTime auditEventDate) {
-        this.auditEventDate = auditEventDate;
-    }
+    public void setAuditEventDate(Long auditEventDate) { this.auditEventDate = auditEventDate; }
+
+    public LocalDateTime getAuditEventDDate() {
+        Instant instant = Instant.ofEpochMilli(auditEventDate);
+        LocalDateTime ldt = LocalDateTime.ofInstant(instant, ZoneOffset.systemDefault());
+        return ldt; }
+
+    public void setAuditEventDDate(LocalDateTime auditEventDate) { this.auditEventDate =
+        auditEventDate.toInstant(ZoneOffset.ofTotalSeconds(7200)).toEpochMilli(); }
 
     public String getAuditEventType() {
         return auditEventType;
@@ -60,11 +64,7 @@ public class PersistentAuditEvent {
         this.auditEventType = auditEventType;
     }
 
-    public Map<String, String> getData() {
-        return data;
-    }
+    public Set<PersistentAuditEventData> getData() { return data; }
 
-    public void setData(Map<String, String> data) {
-        this.data = data;
-    }
+    public void setData(Set<PersistentAuditEventData> data) { this.data = data; }
 }

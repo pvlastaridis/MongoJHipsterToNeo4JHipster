@@ -11,21 +11,16 @@ public class ManagedUserDTO extends UserDTO {
 
     private String id;
 
-    private ZonedDateTime createdDate;
-
-    private String lastModifiedBy;
-
-    private ZonedDateTime lastModifiedDate;
+    private Long createdDate;
 
     public ManagedUserDTO() {
     }
 
     public ManagedUserDTO(User user) {
         super(user);
-        this.id = user.getId();
+        this.id = user.getId().toString();
         this.createdDate = user.getCreatedDate();
-        this.lastModifiedBy = user.getLastModifiedBy();
-        this.lastModifiedDate = user.getLastModifiedDate();
+
     }
 
     public String getId() {
@@ -36,37 +31,21 @@ public class ManagedUserDTO extends UserDTO {
         this.id = id;
     }
 
-    public ZonedDateTime getCreatedDate() {
+    public Long getCreatedDate() {
         return createdDate;
     }
 
-    public void setCreatedDate(ZonedDateTime createdDate) {
+    public void setCreatedDate(Long createdDate) {
         this.createdDate = createdDate;
     }
 
-    public String getLastModifiedBy() {
-        return lastModifiedBy;
-    }
 
-    public void setLastModifiedBy(String lastModifiedBy) {
-        this.lastModifiedBy = lastModifiedBy;
-    }
-
-    public ZonedDateTime getLastModifiedDate() {
-        return lastModifiedDate;
-    }
-
-    public void setLastModifiedDate(ZonedDateTime lastModifiedDate) {
-        this.lastModifiedDate = lastModifiedDate;
-    }
 
     @Override
     public String toString() {
         return "ManagedUserDTO{" +
             "id=" + id +
             ", createdDate=" + createdDate +
-            ", lastModifiedBy='" + lastModifiedBy + '\'' +
-            ", lastModifiedDate=" + lastModifiedDate +
             "} " + super.toString();
     }
 }

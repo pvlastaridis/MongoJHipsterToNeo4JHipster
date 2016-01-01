@@ -3,27 +3,27 @@ package com.mycompany.myapp.repository;
 import com.mycompany.myapp.domain.User;
 
 import java.time.ZonedDateTime;
-import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.neo4j.repository.GraphRepository;
 
 import java.util.List;
 import java.util.Optional;
 
 /**
- * Spring Data MongoDB repository for the User entity.
+ * Spring Data Neo4jDB repository for the User entity.
  */
-public interface UserRepository extends MongoRepository<User, String> {
+public interface UserRepository extends GraphRepository<User> {
 
     Optional<User> findOneByActivationKey(String activationKey);
 
-    List<User> findAllByActivatedIsFalseAndCreatedDateBefore(ZonedDateTime dateTime);
+    List<User> findAllByActivatedIsFalseAndCreatedDateBefore(Long dateTime);
 
-    Optional<User> findOneByResetKey(String resetKey);
+    User findOneByResetKey(String resetKey);
 
-    Optional<User> findOneByEmail(String email);
+    User findOneByEmail(String email);
 
-    Optional<User> findOneByLogin(String login);
+    User findOneByLogin(String login);
 
-    Optional<User> findOneById(String userId);
+    User findOneById(String userId);
 
     @Override
     void delete(User t);

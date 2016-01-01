@@ -2,30 +2,22 @@ package com.mycompany.myapp.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.validator.constraints.Email;
-
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
+import org.neo4j.ogm.annotation.NodeEntity;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
-import java.io.Serializable;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.Set;
-import java.time.ZonedDateTime;
 
 /**
  * A user.
  */
-@Document(collection = "jhi_user")
-public class User extends AbstractAuditingEntity implements Serializable {
-
-    @Id
-    private String id;
+@NodeEntity
+public class User extends Entity {
 
     @NotNull
     @Pattern(regexp = "^[a-z0-9]*$|(anonymousUser)")
@@ -34,15 +26,13 @@ public class User extends AbstractAuditingEntity implements Serializable {
 
     @JsonIgnore
     @NotNull
-    @Size(min = 60, max = 60) 
+    @Size(min = 60, max = 60)
     private String password;
 
     @Size(max = 50)
-    @Field("first_name")
     private String firstName;
 
     @Size(max = 50)
-    @Field("last_name")
     private String lastName;
 
     @Email
@@ -52,31 +42,21 @@ public class User extends AbstractAuditingEntity implements Serializable {
     private boolean activated = false;
 
     @Size(min = 2, max = 5)
-    @Field("lang_key")
     private String langKey;
 
     @Size(max = 20)
-    @Field("activation_key")
     @JsonIgnore
     private String activationKey;
 
     @Size(max = 20)
-    @Field("reset_key")
     private String resetKey;
 
-    @Field("reset_date")
-    private ZonedDateTime resetDate = null;
+    private Long createdDate = null;
+
+    private Long resetDate = null;
 
     @JsonIgnore
     private Set<Authority> authorities = new HashSet<>();
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
 
     public String getLogin() {
         return login;
@@ -142,12 +122,42 @@ public class User extends AbstractAuditingEntity implements Serializable {
         this.resetKey = resetKey;
     }
 
-    public ZonedDateTime getResetDate() {
-       return resetDate;
+    public Long getResetDate() {
+        return resetDate;
     }
 
-    public void setResetDate(ZonedDateTime resetDate) {
-       this.resetDate = resetDate;
+    public void setResetDate(Long resetDate) {
+        this.resetDate = resetDate;
+    }
+
+    @JsonIgnore
+    public ZonedDateTime getResetDDate() {
+        Instant instant = Instant.ofEpochMilli(resetDate);
+        ZonedDateTime ldt = ZonedDateTime.ofInstant(instant, ZoneOffset.systemDefault());
+        return ldt;
+    }
+
+    public void setResetDDate(ZonedDateTime resetDate) {
+        this.resetDate = resetDate.toEpochSecond();
+    }
+
+    public Long getCreatedDate() {
+        return createdDate;
+    }
+
+    public void setCreatedDate(Long resetDate) {
+        this.createdDate = resetDate;
+    }
+
+    @JsonIgnore
+    public ZonedDateTime getCreatedDDate() {
+        Instant instant = Instant.ofEpochMilli(createdDate);
+        ZonedDateTime ldt = ZonedDateTime.ofInstant(instant, ZoneOffset.systemDefault());
+        return ldt;
+    }
+
+    public void setCreatedDDate(ZonedDateTime resetDate) {
+        this.createdDate = resetDate.toEpochSecond();
     }
 
     public String getLangKey() {
@@ -164,29 +174,6 @@ public class User extends AbstractAuditingEntity implements Serializable {
 
     public void setAuthorities(Set<Authority> authorities) {
         this.authorities = authorities;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-
-        User user = (User) o;
-
-        if (!login.equals(user.login)) {
-            return false;
-        }
-
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        return login.hashCode();
     }
 
     @Override

@@ -2,18 +2,23 @@ package com.mycompany.myapp.repository;
 
 import com.mycompany.myapp.domain.PersistentToken;
 import com.mycompany.myapp.domain.User;
-import java.time.LocalDate;
-import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.neo4j.annotation.Query;
+import org.springframework.data.neo4j.repository.GraphRepository;
 
 import java.util.List;
 
 /**
- * Spring Data MongoDB repository for the PersistentToken entity.
+ * Spring Data Neo4jDB repository for the PersistentToken entity.
  */
-public interface PersistentTokenRepository extends MongoRepository<PersistentToken, String> {
+public interface PersistentTokenRepository extends GraphRepository<PersistentToken> {
 
     List<PersistentToken> findByUser(User user);
 
-    List<PersistentToken> findByTokenDateBefore(LocalDate localDate);
+    @Query("MATCH (n:PersistentToken)-[]->(:User {login:{0}}) RETURN n")
+    List<PersistentToken> findByUserCypher(String login);
+
+    Iterable<PersistentToken> findByTokenDateBefore(Long localDate);
+
+    PersistentToken findOneBySeries(String series);
 
 }

@@ -3,9 +3,11 @@ package com.mycompany.myapp.repository;
 import com.mycompany.myapp.config.audit.AuditEventConverter;
 import com.mycompany.myapp.domain.PersistentAuditEvent;
 
+import com.mycompany.myapp.domain.PersistentAuditEventData;
 import org.springframework.boot.actuate.audit.AuditEvent;
 import org.springframework.boot.actuate.audit.AuditEventRepository;
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,8 +16,7 @@ import javax.inject.Inject;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * Wraps an implementation of Spring Boot's AuditEventRepository.
@@ -25,6 +26,9 @@ public class CustomAuditEventRepository {
 
     @Inject
     private PersistenceAuditEventRepository persistenceAuditEventRepository;
+
+    @Inject
+    private PersistenceAuditEventDataRepository persistenceAuditEventDataRepository;
 
     @Bean
     public AuditEventRepository auditEventRepository() {
@@ -46,7 +50,8 @@ public class CustomAuditEventRepository {
                     persistentAuditEvents = persistenceAuditEventRepository.findByPrincipal(principal);
                 } else {
                     persistentAuditEvents =
-                        persistenceAuditEventRepository.findByPrincipalAndAuditEventDateAfter(principal, LocalDateTime.from(after.toInstant()));
+                        persistenceAuditEventRepository.findByPrincipalAndAuditEventDateAfter(principal,
+                            after.getTime());
                 }
                 return auditEventConverter.convertToAuditEvent(persistentAuditEvents);
             }
@@ -61,8 +66,38 @@ public class CustomAuditEventRepository {
                     persistentAuditEvent.setPrincipal(event.getPrincipal());
                     persistentAuditEvent.setAuditEventType(event.getType());
                     Instant instant = Instant.ofEpochMilli(event.getTimestamp().getTime());
-                    persistentAuditEvent.setAuditEventDate(LocalDateTime.ofInstant(instant, ZoneId.systemDefault()));
-                    persistentAuditEvent.setData(auditEventConverter.convertDataToStrings(event.getData()));
+                    persistentAuditEvent.setAuditEventDDate(LocalDateTime.ofInstant(instant, ZoneId.systemDefault()));
+
+                    Map<String, Object> data = event.getData();
+                    Set<PersistentAuditEventData> results = new HashSet<>();
+
+                    if (data != null) {
+                        for (String key : data.keySet()) {
+                            Object object = data.get(key);
+
+                            // Extract the data that will be saved.
+                            if (object instanceof WebAuthenticationDetails) {
+                                WebAuthenticationDetails authenticationDetails = (WebAuthenticationDetails) object;
+                                PersistentAuditEventData pad = new PersistentAuditEventData();
+                                pad.setName("remoteAddress");
+                                pad.setValue(authenticationDetails.getRemoteAddress());
+                                pad = persistenceAuditEventDataRepository.save(pad);
+                                results.add(pad);
+                                PersistentAuditEventData pad2 = new PersistentAuditEventData();
+                                pad2.setName("sessionId");
+                                pad2.setValue(authenticationDetails.getSessionId());
+                                pad2 = persistenceAuditEventDataRepository.save(pad2);
+                                results.add(pad2);
+                            } else {
+                                PersistentAuditEventData pad = new PersistentAuditEventData();
+                                pad.setName(key);
+                                pad.setValue(object.toString());
+                                pad = persistenceAuditEventDataRepository.save(pad);
+                                results.add(pad);
+                            }
+                        }
+                    }
+                    persistentAuditEvent.setData(results);
                     persistenceAuditEventRepository.save(persistentAuditEvent);
                 }
             }

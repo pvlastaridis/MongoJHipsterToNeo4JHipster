@@ -1,7 +1,0 @@
-mongohipster-mongodb:
-  container_name: mongohipster-mongodb
-  image: mongo:3.0.7
-  # volumes:
-  #   - ~/volumes/jhipster/mongohipster/mongodb/:/data/db/
-  ports:
-    - "27017:27017"
