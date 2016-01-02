@@ -18,11 +18,6 @@ spring:
             enabled: true
         livereload:
             enabled: false # we use Grunt + BrowserSync for livereload
-    data:
-        mongodb:
-            host: localhost
-            port: 27017
-            database: mongohipster
     mail:
         host: localhost
     messages:

@@ -12,12 +12,11 @@ import java.util.List;
  */
 public interface PersistentTokenRepository extends GraphRepository<PersistentToken> {
 
-    List<PersistentToken> findByUser(User user);
-
     @Query("MATCH (n:PersistentToken)-[]->(:User {login:{0}}) RETURN n")
     List<PersistentToken> findByUserCypher(String login);
 
-    Iterable<PersistentToken> findByTokenDateBefore(Long localDate);
+    @Query("MATCH (n:PersistentToken) WHERE n.tokenDate < {0} RETURN n")
+    Iterable<PersistentToken> findByTokenDateBeforeCypher(Long localDate);
 
     PersistentToken findOneBySeries(String series);
 

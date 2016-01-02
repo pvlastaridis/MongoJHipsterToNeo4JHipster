@@ -1,6 +1,6 @@
-package com.mycompany.myapp.domain.util;
+package com.mycompany.myapp.config.util;
 
-import com.mycompany.myapp.domain.util.JSR310DateConverters.*;
+import com.mycompany.myapp.config.util.JSR310DateConverters.*;
 
 import java.time.*;
 import java.util.Date;

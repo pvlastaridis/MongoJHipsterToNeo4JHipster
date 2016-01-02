@@ -1,6 +1,6 @@
 {
   "generator-jhipster": {
-    "baseName": "mongohipster",
+    "baseName": "neo4jhipster",
     "packageName": "com.mycompany.myapp",
     "packageFolder": "com/mycompany/myapp",
     "authenticationType": "session",

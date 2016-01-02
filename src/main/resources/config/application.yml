@@ -52,8 +52,8 @@ jhipster:
             # security key (this key should be unique for your application, and kept secret)
             key: c2f95d0df750bb144f4f8e4d254339d8d74faf8c
     swagger:
-        title: mongohipster API
-        description: mongohipster API documentation
+        title: neo4jhipster API
+        description: neo4jhipster API documentation
         version: 0.0.1
         termsOfServiceUrl:
         contact:

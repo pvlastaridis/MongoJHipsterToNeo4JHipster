@@ -1,4 +1,4 @@
-package com.mycompany.myapp.domain.util;
+package com.mycompany.myapp.config.util;
 
 import java.time.*;
 import java.util.Date;

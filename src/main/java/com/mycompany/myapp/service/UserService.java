@@ -57,7 +57,6 @@ public class UserService {
 
     public Optional<User> completePasswordReset(String newPassword, String key) {
        log.debug("Reset user password for reset key {}", key);
-
        return Optional.ofNullable(userRepository.findOneByResetKey(key))
             .filter(user -> {
                 ZonedDateTime oneDayAgo = ZonedDateTime.now().minusHours(24);
@@ -67,7 +66,7 @@ public class UserService {
                 user.setPassword(passwordEncoder.encode(newPassword));
                 user.setResetKey(null);
                 user.setResetDate(null);
-                userRepository.save(user);
+                user = userRepository.save(user);
                 return user;
            });
     }
@@ -86,9 +85,9 @@ public class UserService {
     public User createUserInformation(String login, String password, String firstName, String lastName, String email,
         String langKey) {
 
-        User newUser = new User();
         Authority authority = authorityRepository.findOneByName("ROLE_USER");
         Set<Authority> authorities = new HashSet<>();
+        User newUser = new User();
         String encryptedPassword = passwordEncoder.encode(password);
         newUser.setLogin(login);
         // new user gets initially a generated password
@@ -193,7 +192,7 @@ public class UserService {
     @Scheduled(cron = "0 0 0 * * ?")
     public void removeOldPersistentTokens() {
         LocalDate now = LocalDate.now();
-        for(PersistentToken token : persistentTokenRepository.findByTokenDateBefore(now.minusMonths(1).toEpochDay())) {
+        for(PersistentToken token : persistentTokenRepository.findByTokenDateBeforeCypher(now.minusMonths(1).toEpochDay())) {
             log.debug("Deleting token {}", token.getSeries());
             persistentTokenRepository.delete(token);
         }

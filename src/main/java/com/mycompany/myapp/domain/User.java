@@ -132,7 +132,7 @@ public class User extends Entity {
 
     @JsonIgnore
     public ZonedDateTime getResetDDate() {
-        Instant instant = Instant.ofEpochMilli(resetDate);
+        Instant instant = Instant.ofEpochSecond(resetDate);
         ZonedDateTime ldt = ZonedDateTime.ofInstant(instant, ZoneOffset.systemDefault());
         return ldt;
     }

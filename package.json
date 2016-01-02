@@ -1,7 +1,7 @@
 {
-  "name": "mongohipster",
+  "name": "neo4jhipster",
   "version": "0.0.0",
-  "description": "Description for mongohipster",
+  "description": "Description for neo4jhipster",
   "private": true,
   "cacheDirectories": [
     "node_modules",

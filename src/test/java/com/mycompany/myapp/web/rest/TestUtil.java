@@ -1,7 +1,7 @@
 package com.mycompany.myapp.web.rest;
 
-import com.mycompany.myapp.domain.util.JSR310DateTimeSerializer;
-import com.mycompany.myapp.domain.util.JSR310LocalDateDeserializer;
+import com.mycompany.myapp.config.util.JSR310DateTimeSerializer;
+import com.mycompany.myapp.config.util.JSR310LocalDateDeserializer;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;

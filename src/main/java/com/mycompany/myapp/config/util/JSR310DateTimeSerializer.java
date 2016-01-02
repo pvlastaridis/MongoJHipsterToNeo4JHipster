@@ -1,4 +1,4 @@
-package com.mycompany.myapp.domain.util;
+package com.mycompany.myapp.config.util;
 
 import java.io.IOException;
 import java.time.ZoneId;

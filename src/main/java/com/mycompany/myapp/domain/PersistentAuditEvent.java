@@ -17,8 +17,6 @@ import java.util.Set;
 @NodeEntity
 public class PersistentAuditEvent extends Entity {
 
-    private String eventId;
-
     @NotNull
     private String principal;
 
@@ -28,13 +26,6 @@ public class PersistentAuditEvent extends Entity {
 
     @Relationship
     private Set<PersistentAuditEventData> data = new HashSet<>();
-
-
-    public String getEventId() { return eventId; }
-
-    public void setEventId(String id) {
-        this.eventId = id;
-    }
 
     public String getPrincipal() {
         return principal;
@@ -54,7 +45,7 @@ public class PersistentAuditEvent extends Entity {
         return ldt; }
 
     public void setAuditEventDDate(LocalDateTime auditEventDate) { this.auditEventDate =
-        auditEventDate.toInstant(ZoneOffset.ofTotalSeconds(7200)).toEpochMilli(); }
+        auditEventDate.toInstant(ZoneOffset.ofHours(2)).toEpochMilli(); }
 
     public String getAuditEventType() {
         return auditEventType;
